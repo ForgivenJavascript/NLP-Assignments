@@ -5,7 +5,6 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
 
 
-# STEP 1.2:
 def readMemory():
     song_dataframe = pd.read_csv("songdata.csv")
     artist = np.array(song_dataframe['artist'])
@@ -36,7 +35,6 @@ def readMemory():
 
     id = np.array(id)
     result = list()
-    # using only first 1000 datas in order to save time
     result.append(artist)
     result.append(song)
     result.append(link)
@@ -100,7 +98,6 @@ def tokenize(sent):
 
     return tokens
 
-# Step 1.3, 1.4:
 def tokenize_stuff(title_list, lyric_list):
     lyric_begin = "<s>"
     lyric_end = "</s>"
@@ -115,7 +112,6 @@ def tokenize_stuff(title_list, lyric_list):
             else:
                 new_edit += j
         new_edit += lyric_end
-        # print(new_edit)
         lyric_token.append(tokenize(new_edit))
 
     lyric_token = np.array(lyric_token)
@@ -133,7 +129,6 @@ def tokenize_stuff(title_list, lyric_list):
     return result
 
 
-# Step 2.1:
 def word_vocabulary(lyrics):
     vocab = {}
     for i in lyrics:
@@ -153,9 +148,8 @@ def word_vocabulary(lyrics):
     return vocab
 
 
-# Step 2.2: vocab and lyric are both single dictionary and single list of lyric tokens.
+# Vocab and lyric are both single dictionary and single list of lyric tokens.
 def bigram_matrix(vocab, lyric_tokens):
-    # bigram_matrix[first][second]
     bigram_matrix = {}
 
     for lyric_token in lyric_tokens:
@@ -175,9 +169,8 @@ def bigram_matrix(vocab, lyric_tokens):
     return bigram_matrix
 
 
-# Step 2.3
 def trigram_matrix(vocab, lyric_tokens):
-    # trigram_matrix[(first,second)][third]
+    # format: trigram_matrix[(first,second)][third]
     trigram_matrix = {}
 
     for lyric_token in lyric_tokens:
@@ -198,7 +191,6 @@ def trigram_matrix(vocab, lyric_tokens):
     return trigram_matrix
 
 
-# Step 2.4
 def word_possibility(vocab, w3, w2, bigram, w1 = None, trigram = None):
 
     # p(w3 | w1, w2) = trigramCounts[(w1, w2)][w3]+1/bigramCounts[(w1, w2)] + VOCAB_SIZE
@@ -258,22 +250,8 @@ def word_possibility(vocab, w3, w2, bigram, w1 = None, trigram = None):
         temp = temp/(bigram[w1][w2]+len(vocab))
 
         return (result+temp)/2
-        '''
-        if w3 in trigram[(w1, w2)]:
-            result = trigram[(w1, w2)][w3] + 1
-        else:
-            result = 1
-
-        pool_sum = 0
-
-        for i in trigram[(w1, w2)]:
-            pool_sum += trigram[(w1, w2)][i]
-
-        result = result/(pool_sum + len(vocab))
-        '''
 
 
-# codes from previous assignment:
 def getConllTags(filename):
     # input: filename for a conll style parts of speech tagged file
     # output: a list of list of tuples
@@ -363,7 +341,6 @@ def trainAdjectiveClassifier(features, adjs):
     return model
 
 
-# Step 3.2:
 def title_extract_feature(titles, wordToIndex):
     result = []
     for title in titles:
@@ -534,7 +511,8 @@ if __name__ == '__main__':
     lyric_token = tokens[1]
     ids = datas[4]
 
-    # Stage 1 Checkpoint:
+    #Stage 1 Checkpoint:
+    print('Stage 1 Checkpoint: tokenized song title and lyric')
     index = np.where(ids == 'abba-burning_my_bridges')
     print('abba-burning_my_bridges: ')
     print(title_token[index])
@@ -553,12 +531,14 @@ if __name__ == '__main__':
     print(lyric_token[index])
 
     #Stage 2 Checkpoint:
-    vocabs = word_vocabulary(lyric_token[:5000])
+    print('Stage 2 Checkpoint: matrixes')
+    vocabs = word_vocabulary(lyric_token[:6000])
     print('vocab: ')
     print(len(vocabs))
-    bigram = bigram_matrix(vocabs, lyric_token[:5000])
-    trigram = trigram_matrix(vocabs, lyric_token[:5000])
+    bigram = bigram_matrix(vocabs, lyric_token[:6000])
+    trigram = trigram_matrix(vocabs, lyric_token[:6000])
 
+    print('word probability synatx: P(next_word | previous_2_words)')
     print('p(you | I, love):')
     print(word_possibility(vocabs, 'you', 'love', bigram, 'I', trigram))
     print('p(special | (midnight, )):')
@@ -570,7 +550,6 @@ if __name__ == '__main__':
     print('p(funny | (something, very)):')
     print(word_possibility(vocabs, 'funny', 'very', bigram, 'something', trigram))
 
-    # Step 3.1 here
     taggedSents = getConllTags('daily547.conll')
 
     wordToIndex = set()  # maps words to an index
@@ -615,9 +594,8 @@ if __name__ == '__main__':
     print(adjective_dict.get('afraid'))
     print('artist-songs associated with red')
     print(adjective_dict.get('red'))
-    print('artist-songs associated with blue')
-    print(adjective_dict.get('blue'))
 
+    print('generating lyrics for keyword with large data:')
     good_model = build_language_model(adjective_dict.get('good'), ids, lyric_token)
     print('good 1:')
     print(generate_lyrics(good_model))
@@ -634,6 +612,7 @@ if __name__ == '__main__':
     print('happy 3:')
     print(generate_lyrics(happy_model))
 
+    print('generating lyrics with keyword with few data:')
     afraid_model = build_language_model(adjective_dict.get('afraid'), ids, lyric_token)
     print('afraid 1:')
     print(generate_lyrics(afraid_model))
@@ -642,18 +621,11 @@ if __name__ == '__main__':
     print('afraid 3:')
     print(generate_lyrics(afraid_model))
 
+    print('generating lyrics that doens\'t have any data:')
     red_model = build_language_model(adjective_dict.get('red'), ids, lyric_token)
-    print('red 1:')
-    print(generate_lyrics(red_model))
-    print('red 2:')
-    print(generate_lyrics(red_model))
-    print('red 3:')
+    print('red:')
     print(generate_lyrics(red_model))
 
     blue_model = build_language_model(adjective_dict.get('blue'), ids, lyric_token)
-    print('blue 1:')
-    print(generate_lyrics(blue_model))
-    print('blue 2:')
-    print(generate_lyrics(blue_model))
-    print('blue 3:')
+    print('blue:')
     print(generate_lyrics(blue_model))
