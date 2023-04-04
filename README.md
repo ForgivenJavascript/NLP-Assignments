@@ -1,6 +1,6 @@
 # NLP Assignments
  
-mood_lyric_generator tokenizes each words including <end of line>, <end of lyric> , <comma> and <period> of lyrics of 57650 songs.
+mood_lyric_generator tokenizes each words including "<end of line>", "<end of lyric>" , "<comma>" and "<period>" of lyrics of 57650 songs.
 
 There are 4 features shown in the terminal when you run the code:
 1. There are 4 examples of song. Each example shows the list of words for the title and another list of words for the lyrics.
